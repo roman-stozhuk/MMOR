@@ -18,5 +18,19 @@ namespace Utils
                     matrix[i, j] = value;
             return matrix;
         }
+
+        public static T[][] Init2DArray<T>(int rows, int cols, T value)
+        {
+            var matrix = new T[rows][];
+            for (int i = 0; i < rows; i++)
+            {
+                matrix[i] = new T[cols];
+                for (int j = 0; j < cols; j++)
+                {
+                    matrix[i][j] = value;
+                }
+            }
+            return matrix;
+        }
     }
 }
