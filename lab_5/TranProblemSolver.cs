@@ -1,4 +1,3 @@
-using System.Web;
 using Utils;
 
 class TranProblemSolver
@@ -9,9 +8,6 @@ class TranProblemSolver
     private int n;
     private int[,] prices;
 
-    public int?[,] deliveries;
-
-
     public TranProblemSolver(int[] A, int[] B, int[,] C)
     {
         this.supplies = A;
@@ -21,8 +17,6 @@ class TranProblemSolver
         this.n = demands.Length;
 
         this.prices = C;
-
-        this.deliveries = MathUtils.InitMatrix(m, n, (int?)null);
     }
 
     public TranProblemSolver(string problemPath)
@@ -43,12 +37,11 @@ class TranProblemSolver
             for (int j = 0; j < n; j++)
                 prices[i, j] = row[j];
         }
-
-        this.deliveries = MathUtils.InitMatrix(m, n, (int?)null);
     }
 
     public int?[,] NorthWestCorner()
     {
+        int?[,] plan = MathUtils.InitMatrix(m, n, (int?)null);
         int[] suppliesCopy = (int[])supplies.Clone();
         int[] demandsCopy = (int[])demands.Clone();
 
@@ -56,7 +49,7 @@ class TranProblemSolver
         while (i != m && j != n)
         {
             int amount = Math.Min(suppliesCopy[i], demandsCopy[j]);
-            deliveries[i, j] = amount; 
+            plan[i, j] = amount; 
             suppliesCopy[i] -= amount;
             demandsCopy[j] -= amount;
 
@@ -64,32 +57,201 @@ class TranProblemSolver
             else if (demandsCopy[j] == 0) j++;
         }
 
-        return deliveries;
+        return plan;
     }
 
-    public int[,] PotentialMethod(int?[,] plan) 
+    private List<(int, int)> BuildTheCycle(List<(int, int)> basis)
     {
+        var start = basis.Last();
+        var cycle = new List<(int, int)>();
 
+        bool Dfs((int, int) current, bool isHorizontal, List<(int, int)> path, HashSet<(int, int)> visited)
+        {
+            foreach (var next in basis)
+            {
+                bool sameRow = current.Item1 == next.Item1;
+                bool sameCol = current.Item2 == next.Item2;
+
+                if ((isHorizontal && sameRow) || (!isHorizontal && sameCol))
+                {
+                    if (next == start && path.Count >= 4)
+                    {
+                        cycle.AddRange(path);
+                        return true;
+                    }
+
+                    if (!visited.Contains(next))
+                    {
+                        visited.Add(next);
+                        path.Add(next);
+
+                        if (Dfs(next, !isHorizontal, path, visited)) return true;
+
+                        path.RemoveAt(path.Count - 1);
+                        visited.Remove(next);
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        var path = new List<(int, int)> { start };
+        var visited = new HashSet<(int, int)> { start };
+        Dfs(start, true, path, visited);
+
+        return cycle;
     }
-}
 
-
-class Program
-{
-    static void Main()
+    private List<(int, int)> FindBasis(int?[,] plan)
     {
-        // Запис плану у файл
-        using (StreamWriter writer = new StreamWriter(outputPath))
+        List<(int, int)> listOfDeliveries = [];
+
+        for (int i = 0; i < plan.GetLength(0); i++)
+        {
+            for (int j = 0; j < plan.GetLength(1); j++)
+            {
+                if (plan[i, j].HasValue)
+                {
+                    listOfDeliveries.Add((i, j));
+                }
+            }
+        }
+
+        return listOfDeliveries;
+    }
+
+    public void SavePlan(string fileName, int?[,] plan)
+    {
+        int[,] deliveries = ConvertPlanToDeliveries(plan);
+        int optimalPrice = 0;
+        using (StreamWriter writer = new StreamWriter(fileName))
         {
             for (int i = 0; i < m; i++)
             {
                 for (int j = 0; j < n; j++)
                 {
-                    writer.Write(plan[i, j]);
+                    optimalPrice += deliveries[i, j] * prices[i, j];
+                    writer.Write(deliveries[i, j]);
                     if (j < n - 1) writer.Write(" ");
                 }
                 writer.WriteLine();
             }
+
+            writer.WriteLine($"F = {optimalPrice}");
         }
+    }
+
+    public void PrintPlan(int?[,] plan)
+    {
+        int[,] deliveries = ConvertPlanToDeliveries(plan);
+        int optimalPrice = 0;
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                optimalPrice += deliveries[i, j] * prices[i, j];
+                Console.Write(deliveries[i, j]);
+                if (j < n - 1) Console.Write(" ");
+            }
+            Console.WriteLine();
+        }
+
+        Console.WriteLine($"F = {optimalPrice}\n");
+    }
+
+    public int[,] ConvertPlanToDeliveries(int?[,] plan)
+    {
+        int[,] converted = new int[m, n];
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                converted[i, j] = plan[i, j] ?? 0;
+            }
+        }
+        return converted;
+    }
+
+    public int?[,] PotentialMethod(int?[,] plan) 
+    {
+        int?[] u = new int?[m];
+        u[0] = 0;
+        int?[] v = new int?[n];
+
+        var listOfDeliveries = FindBasis(plan);
+
+        var clone = new List<(int, int)>(listOfDeliveries);
+        do
+        {
+            var toRemove = new List<(int, int)>();
+
+            foreach (var (i, j) in clone)
+            {
+                if (u[i].HasValue && !v[j].HasValue)
+                {
+                    v[j] = prices[i, j] - u[i];
+                    toRemove.Add((i, j));
+                }
+                else if (!u[i].HasValue && v[j].HasValue)
+                {
+                    u[i] = prices[i, j] - v[j];
+                    toRemove.Add((i, j));
+                }
+            }
+
+            foreach (var item in toRemove)
+            {
+                clone.Remove(item);
+            }
+
+        } while (clone.Count != 0);
+
+
+        var max_delta = (0, 0, u[0].Value + v[0].Value - prices[0, 0]);
+        for (int i = 0; i < m; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                if (!plan[i, j].HasValue)
+                {
+                    int delta = u[i].Value + v[j].Value - prices[i, j];
+                    if (delta > max_delta.Item3)
+                        max_delta = (i, j, delta);
+                }
+            }
+        }
+
+        //plan is optimal
+        PrintPlan(plan);
+        if (max_delta.Item3 <= 0) return plan;
+
+
+        listOfDeliveries.Add((max_delta.Item1, max_delta.Item2));
+        plan[max_delta.Item1, max_delta.Item2] = 0;
+        var cycle = BuildTheCycle(listOfDeliveries);
+
+        var minusCells = cycle.Where((_, index) => index % 2 == 1).ToList();
+        int theta = minusCells.Min(cell => plan[cell.Item1, cell.Item2].Value);
+
+        for (int k = 0; k < cycle.Count; k++)
+        {
+            var (i, j) = cycle[k];
+            if (k % 2 == 0) // "+ cell"
+                plan[i, j] = plan[i, j].Value + theta;
+            else // "- cell"
+                plan[i, j] = plan[i, j].Value - theta;
+        }
+
+        foreach (var (i, j) in minusCells)
+        {
+            if (plan[i, j] == 0)
+            {
+                plan[i, j] = null;
+                break;
+            }
+        }
+
+        return PotentialMethod(plan);
     }
 }
