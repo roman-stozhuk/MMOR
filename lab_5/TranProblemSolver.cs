@@ -41,7 +41,7 @@ class TranProblemSolver
 
     public int?[,] NorthWestCorner()
     {
-        int?[,] plan = MathUtils.InitMatrix(m, n, (int?)null);
+        int?[,] plan = Initializer.InitMatrix(m, n, (int?)null);
         int[] suppliesCopy = (int[])supplies.Clone();
         int[] demandsCopy = (int[])demands.Clone();
 
