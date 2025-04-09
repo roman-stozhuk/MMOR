@@ -2,21 +2,14 @@ class TSPBranch
 {
     public int[,] RouteMatrix;
 
-    public List<int> Path;
-    
-    public int CurrentLength;
+    public int[] Path;
     
     public int LowerBound;
-    
-    public int CurrentCity => Path[^1];
-    
-    public int Depth => Path.Count - 1;
 
-    public TSPBranch(int[,] routeMatrix, List<int> path, int length, int bound)
+    public TSPBranch(int[,] routeMatrix, int[] path, int lowerBound)
     {
         RouteMatrix = routeMatrix;
         Path = path;
-        CurrentLength = length;
-        LowerBound = bound;
+        LowerBound = lowerBound;
     }
 }
