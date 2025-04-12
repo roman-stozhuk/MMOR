@@ -4,9 +4,13 @@ static class Fibonacci
 
     static public int Number(int index)
     {
-        if (cache.Count-1 < index)
+        if (index < 0)
+            throw new ArgumentOutOfRangeException(nameof(index), "Fibonacci index must be non-negative.");
+
+        while (cache.Count <= index)
         {
-            cache[index] = Number(index - 1) + Number(index - 2);
+            int last = cache[^1] + cache[^2];
+            cache.Add(last);
         }
 
         return cache[index];
