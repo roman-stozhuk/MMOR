@@ -1,6 +1,3 @@
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.VisualBasic;
 using Utils;
 
 class TSProblemSolver
@@ -146,7 +143,7 @@ class TSProblemSolver
         return new TSPBranch(newMatrix, newPath, newBound);
     }
 
-    private TSPBranch ExcludeFromBranch(TSPBranch originalBranch, (int, int) branchingPoint)/////////////
+    private TSPBranch ExcludeFromBranch(TSPBranch originalBranch, (int, int) branchingPoint)
     {
         (int i, int j) = branchingPoint;
 

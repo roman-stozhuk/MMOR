@@ -65,7 +65,9 @@ class TranProblemSolver
         var start = basis.Last();
         var cycle = new List<(int, int)>();
 
-        bool Dfs((int, int) current, bool isHorizontal, List<(int, int)> path, HashSet<(int, int)> visited)
+        bool Dfs((int, int) current, bool isHorizontal, 
+                List<(int, int)> path, HashSet<(int, int)> visited
+        )
         {
             foreach (var next in basis)
             {
@@ -181,12 +183,13 @@ class TranProblemSolver
 
         var listOfDeliveries = FindBasis(plan);
 
-        var clone = new List<(int, int)>(listOfDeliveries);
+        //calculate potentials
+        var cloneOfBasis = new List<(int, int)>(listOfDeliveries);
         do
         {
             var toRemove = new List<(int, int)>();
 
-            foreach (var (i, j) in clone)
+            foreach (var (i, j) in cloneOfBasis)
             {
                 if (u[i].HasValue && !v[j].HasValue)
                 {
@@ -202,12 +205,12 @@ class TranProblemSolver
 
             foreach (var item in toRemove)
             {
-                clone.Remove(item);
+                cloneOfBasis.Remove(item);
             }
 
-        } while (clone.Count != 0);
+        } while (cloneOfBasis.Count != 0);
 
-
+        //calculate deltas
         var max_delta = (0, 0, u[0].Value + v[0].Value - prices[0, 0]);
         for (int i = 0; i < m; i++)
         {
@@ -226,11 +229,12 @@ class TranProblemSolver
         PrintPlan(plan);
         if (max_delta.Item3 <= 0) return plan;
 
-
+        //find the cycle
         listOfDeliveries.Add((max_delta.Item1, max_delta.Item2));
         plan[max_delta.Item1, max_delta.Item2] = 0;
         var cycle = BuildTheCycle(listOfDeliveries);
 
+        //rebuild the cycle
         var minusCells = cycle.Where((_, index) => index % 2 == 1).ToList();
         int theta = minusCells.Min(cell => plan[cell.Item1, cell.Item2].Value);
 
