@@ -1,14 +1,18 @@
-Console.WriteLine("1: f(x) = x^2 - 2x - 2xcos(x)");
-Console.WriteLine("2: f(x) = x^2 - 2x + e^-x");
-Console.WriteLine("Select function: ");
-int functionChoice = int.Parse(Console.ReadLine()!);
+using MathNet.Symbolics;
 
-Func<double, double> f = functionChoice switch
+Console.WriteLine("Enter your function to minimize(e.g., x^2 - 2*x - 2*x*cos(x)): ");
+string input = Console.ReadLine()!;
+
+SymbolicExpression expression;
+try
 {
-    1 => (x) => x * x - 2 * x * (1 + Math.Cos(x)),
-    2 => (x) => x * x - 2 * x + Math.Pow(Math.E, (-x)), 
-    _ => throw new ArgumentException("Invalid function number")
-};
+    expression = SymbolicExpression.Parse(input);
+}
+catch
+{
+    Console.WriteLine("Invalid function.");
+    return;
+}
 
 Console.Write("Enter left bound: ");
 double a = double.Parse(Console.ReadLine()!);
@@ -16,9 +20,17 @@ double a = double.Parse(Console.ReadLine()!);
 Console.Write("Enter right bound: ");
 double b = double.Parse(Console.ReadLine()!);
 
-Console.Write("Enter precision: ");
+Console.Write("Enter precision (e.g., 0.05): ");
 double epsilon = double.Parse(Console.ReadLine()!);
 
-double minimum = FuncMinimizer.FibonacciSearch(f, a, b, epsilon);
 
-Console.WriteLine($"Minimum of function: x = {minimum}, f(x) = {f(minimum)}");
+(double minimum, double minValue) = FuncMinimizer
+    .FibonacciSearch(
+        expression,
+        "x", 
+        a, 
+        b, 
+        epsilon, 
+        true);
+
+Console.WriteLine($"Minimum of function: x = {minimum:F9}, f(x) = {minValue:F9}");

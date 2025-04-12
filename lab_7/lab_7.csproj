@@ -4,6 +4,10 @@
     <ProjectReference Include="..\..\dotNet\Utils\Utils.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MathNet.Symbolics" Version="0.25.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>

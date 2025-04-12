@@ -1,10 +1,24 @@
+using MathNet.Symbolics;
+using Expression = MathNet.Symbolics.SymbolicExpression;
+
 public static class FuncMinimizer
 {
-    public static double FibonacciSearch(
-        Func<double, double> f, 
+    private static double EvaluateExpression(
+        Expression expr, 
+        string varName, 
+        double val)
+    {
+        var dict = new Dictionary<string, FloatingPoint>{ [varName] = val };
+        return expr.Evaluate(dict).RealValue;
+    }
+
+    public static (double, double) FibonacciSearch(
+        Expression expression,
+        string variable, 
         double leftBound, 
         double rightBound,
-        double precision)
+        double precision,
+        bool toLog)
     {
         int n = 0;
         {
@@ -21,12 +35,11 @@ public static class FuncMinimizer
             * Fibonacci.Number(n-1) 
             / Fibonacci.Number(n);
 
-        double f1 = f(x1);
-        double f2 = f(x2);
+        double f1 = EvaluateExpression(expression, variable, x1);
+        double f2 = EvaluateExpression(expression, variable, x2);
 
-        Console.WriteLine($"Initial interval: [{leftBound}, {rightBound}]");
-        int iteration = 1;
-        while (rightBound - leftBound >= precision)
+        if (toLog) Console.WriteLine($"Initial interval: [{leftBound}, {rightBound}]");
+        for (int i = 1; i <= n - 2; i++)
         {
             if (f1 <= f2)
             {
@@ -36,9 +49,9 @@ public static class FuncMinimizer
                 f2 = f1;
 
                 x1 = leftBound + (rightBound - leftBound) 
-                    * Fibonacci.Number(n - iteration - 2)
-                    / Fibonacci.Number(n - iteration);
-                f1 = f(x1);
+                    * Fibonacci.Number(n - i - 2)
+                    / Fibonacci.Number(n - i);
+                f1 = EvaluateExpression(expression, variable, x1);
             }
             else
             {
@@ -48,15 +61,18 @@ public static class FuncMinimizer
                 f1 = f2;
 
                 x2 = leftBound + (rightBound - leftBound) 
-                    * Fibonacci.Number(n - iteration - 1) 
-                    / Fibonacci.Number(n - iteration);
-                f2 = f(x2);
+                    * Fibonacci.Number(n - i - 1) 
+                    / Fibonacci.Number(n - i);
+                f2 = EvaluateExpression(expression, variable, x2);
             }
 
-            Console.WriteLine($"Updated interval: [{leftBound:F6}, {rightBound:F6}] on {iteration} iteration.");
-            iteration++;
+            if (toLog) Console.WriteLine(
+                $"Updated interval: [{leftBound:F6}, {rightBound:F6}] on {i} iteration.");
         }
 
-        return (f1 < f2) ? x1 : x2;
+        double minimum = (x1 + x2) / 2;
+        double minValue = expression.Evaluate(
+            new Dictionary<string, FloatingPoint> { { "x", minimum } }).RealValue;
+        return (minimum, minValue);
     }
 }
