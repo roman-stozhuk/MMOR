@@ -15,10 +15,11 @@ Console.Write("Введи точність (наприклад, 0.05): ");
 var precision = double.Parse(Console.ReadLine()!);
 
 // Виклик методу градієнтного спуску
-double[] result = GradientDescent.Run(expression, variables, x0, precision, true);
+(double[] x, double f) = GradientDescent.Run(expression, variables, x0, precision, true);
 
 Console.WriteLine("Знайдений мінімум:");
-for (int i = 0; i < result.Length; i++)
+for (int i = 0; i < x.Length; i++)
 {
-    Console.WriteLine($"x{i + 1} = {result[i]}");
+    Console.WriteLine($"x{i + 1} = {x[i]}");
 }
+Console.WriteLine($"F = {f}");

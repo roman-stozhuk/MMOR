@@ -3,7 +3,53 @@ using Expr = MathNet.Symbolics.SymbolicExpression;
 
 public static class GradientDescent
 {
-    public static double[] Run(
+    private static Dictionary<string, FloatingPoint> ToDictionary(string[] vars, double[] values)
+    {
+        var dict = new Dictionary<string, FloatingPoint>();
+        for (int i = 0; i < vars.Length; i++)
+            dict[vars[i]] = values[i];
+        return dict;
+    }
+
+    private static double EvaluateExpr(
+        Expr expr, 
+        string varName, 
+        double val)
+    {
+        var dict = new Dictionary<string, FloatingPoint>{ [varName] = val };
+        return expr.Evaluate(dict).RealValue;
+    }
+
+    public static (double, double) DichotomySearch(
+        Expr expression,
+        string variable,
+        double leftBound,
+        double rightBound,
+        double epsilon)
+    {
+        double delta = epsilon / 5.0;
+
+        while ((rightBound - leftBound) > epsilon)
+        {
+            double mid = (leftBound + rightBound) / 2.0;
+            double x1 = mid - delta;
+            double x2 = mid + delta;
+
+            double f1 = EvaluateExpr(expression, variable, x1);
+            double f2 = EvaluateExpr(expression, variable, x2);
+
+            if (f1 < f2)
+                rightBound = x2;
+            else
+                leftBound = x1;
+        }
+
+        double beta = (leftBound + rightBound) / 2.0;
+        double fmin = EvaluateExpr(expression, variable, beta);
+        return (beta, fmin);
+    }
+
+    public static (double[], double) Run(
         Expr expression,
         string[] variables,
         double[] x0,
@@ -11,7 +57,7 @@ public static class GradientDescent
         bool toLog)
     {
         double searchLeft = 0.0;
-        double searchRight = 10.0;
+        double searchRight = 1.0;
 
         int n = variables.Length;
         int iteration = 0;
@@ -21,19 +67,14 @@ public static class GradientDescent
         while (true)
         {
             var gradient = new double[n];
-            // for (int i = 0; i < n; i++)
-            //     gradient[i] = expression.DifferentiateAt(variables[i], x0[i])
-            //                             .RealNumberValue;
             for (int i = 0; i < n; i++)
             {
                 var substitutedExpr = expression.Differentiate(variables[i]);
 
-                // підставити всі значення x0 у похідну
                 for (int j = 0; j < n; j++)
                 {
                     substitutedExpr = substitutedExpr.Substitute(variables[j], x0[j]);
                 }
-
                 gradient[i] = substitutedExpr.RealNumberValue;
             }
 
@@ -48,16 +89,8 @@ public static class GradientDescent
             }
 
 
+            (double step, _) = DichotomySearch(stepExpr, stepName, searchLeft, searchRight, precision);
 
-
-            (double step, _) = FuncMinimizer.FibonacciSearch(
-                stepExpr, stepName, searchLeft, searchRight, precision, false);
-
-
-
-            // Array.Copy(x1, x0, n);
-            // for (int i = 0; i < n; i++)
-            //     x1[i] = x0[i] - step * gradient[i];
 
             for (int i = 0; i < n; i++)
             {
@@ -65,11 +98,9 @@ public static class GradientDescent
                 x1[i] = x1[i] - step * gradient[i];
             }
 
-
-            double error = 0;
-            for (int i = 0; i < n; i++)
-                error += Math.Pow(x1[i] - x0[i], 2);
-            error = Math.Sqrt(error);
+            double fx_cur = expression.Evaluate(ToDictionary(variables, x1)).RealValue;
+            double fx_prev = expression.Evaluate(ToDictionary(variables, x0)).RealValue;
+            var error = Math.Abs(fx_cur - fx_prev);
 
             if (toLog)
             {
@@ -80,7 +111,7 @@ public static class GradientDescent
 
             if (error < precision)
             {
-                return x1;
+                return (x1, fx_cur);
             }
 
             iteration++;
