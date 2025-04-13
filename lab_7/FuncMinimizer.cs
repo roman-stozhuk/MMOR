@@ -3,7 +3,7 @@ using Expression = MathNet.Symbolics.SymbolicExpression;
 
 public static class FuncMinimizer
 {
-    private static double EvaluateExpression(
+    public static double EvaluateExpr(
         Expression expr, 
         string varName, 
         double val)
@@ -35,10 +35,10 @@ public static class FuncMinimizer
             * Fibonacci.Number(n-1) 
             / Fibonacci.Number(n);
 
-        double f1 = EvaluateExpression(expression, variable, x1);
-        double f2 = EvaluateExpression(expression, variable, x2);
+        double f1 = EvaluateExpr(expression, variable, x1);
+        double f2 = EvaluateExpr(expression, variable, x2);
 
-        if (toLog) Console.WriteLine($"Initial interval: [{leftBound}, {rightBound}]");
+        if (toLog) Console.WriteLine($"\nInitial interval: [{leftBound}, {rightBound}]");
         for (int i = 1; i <= n - 2; i++)
         {
             if (f1 <= f2)
@@ -51,7 +51,7 @@ public static class FuncMinimizer
                 x1 = leftBound + (rightBound - leftBound) 
                     * Fibonacci.Number(n - i - 2)
                     / Fibonacci.Number(n - i);
-                f1 = EvaluateExpression(expression, variable, x1);
+                f1 = EvaluateExpr(expression, variable, x1);
             }
             else
             {
@@ -63,7 +63,7 @@ public static class FuncMinimizer
                 x2 = leftBound + (rightBound - leftBound) 
                     * Fibonacci.Number(n - i - 1) 
                     / Fibonacci.Number(n - i);
-                f2 = EvaluateExpression(expression, variable, x2);
+                f2 = EvaluateExpr(expression, variable, x2);
             }
 
             if (toLog) Console.WriteLine(
@@ -71,8 +71,7 @@ public static class FuncMinimizer
         }
 
         double minimum = (x1 + x2) / 2;
-        double minValue = expression.Evaluate(
-            new Dictionary<string, FloatingPoint> { { "x", minimum } }).RealValue;
+        double minValue = EvaluateExpr(expression, variable, minimum);
         return (minimum, minValue);
     }
 }
