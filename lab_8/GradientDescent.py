@@ -23,8 +23,8 @@ def gradient_descent(f, x0, precision):
     grad_func = grad(f) 
     x_cur = np.array(x0, dtype=float)
     x_prev = x_cur.copy()
+    
     iteration = 0
-
     while True:
         gradient = grad_func(x_cur)
 
