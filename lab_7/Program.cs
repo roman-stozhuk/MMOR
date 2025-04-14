@@ -1,6 +1,6 @@
 using MathNet.Symbolics;
 
-Console.WriteLine("Enter your function to minimize(e.g., x^2 - 2*x - 2*x*cos(x)): ");
+Console.Write("Enter your function to minimize(e.g., x^2 - 2*x - 2*x*cos(x)):\n>>> ");
 string input = Console.ReadLine()!;
 
 SymbolicExpression expression;
@@ -14,13 +14,13 @@ catch
     return;
 }
 
-Console.Write("Enter left bound: ");
+Console.Write("Enter left bound:\n>>> ");
 double a = double.Parse(Console.ReadLine()!);
 
-Console.Write("Enter right bound: ");
+Console.Write("Enter right bound:\n>>> ");
 double b = double.Parse(Console.ReadLine()!);
 
-Console.Write("Enter precision (e.g., 0.05): ");
+Console.Write("Enter precision (e.g., 0.05):\n>>> ");
 double epsilon = double.Parse(Console.ReadLine()!);
 
 
@@ -28,9 +28,7 @@ double epsilon = double.Parse(Console.ReadLine()!);
     .FibonacciSearch(
         expression,
         "x", 
-        a, 
-        b, 
-        epsilon, 
-        true);
+        a, b, 
+        epsilon);
 
 Console.WriteLine($"Minimum of function: x = {minimum:F9}, f(x) = {minValue:F9}");

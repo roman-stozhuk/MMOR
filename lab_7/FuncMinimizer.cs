@@ -17,8 +17,7 @@ public static class FuncMinimizer
         string variable, 
         double leftBound, 
         double rightBound,
-        double precision,
-        bool toLog)
+        double precision)
     {
         int n = 0;
         {
@@ -38,7 +37,7 @@ public static class FuncMinimizer
         double f1 = EvaluateExpr(expression, variable, x1);
         double f2 = EvaluateExpr(expression, variable, x2);
 
-        if (toLog) Console.WriteLine($"\nInitial interval: [{leftBound}, {rightBound}]");
+        Console.WriteLine($"\nInitial interval: [{leftBound:F7}, {rightBound:F7}]");
         for (int i = 1; i <= n - 2; i++)
         {
             if (f1 <= f2)
@@ -66,8 +65,8 @@ public static class FuncMinimizer
                 f2 = EvaluateExpr(expression, variable, x2);
             }
 
-            if (toLog) Console.WriteLine(
-                $"Updated interval: [{leftBound:F6}, {rightBound:F6}] on {i} iteration.");
+            Console.WriteLine(
+                $"Updated interval: [{leftBound:F7}, {rightBound:F7}] on {i} iteration.");
         }
 
         double minimum = (x1 + x2) / 2;

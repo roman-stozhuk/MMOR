@@ -37,7 +37,7 @@ def gradient_descent(f, x0, precision):
 
         print(f"Iteration = {iteration}, x = {x_cur}, f(x) = {f(x_cur):.9f}")
 
-        if np.abs(f(x_cur) - f(x_prev)) < precision:
+        if abs(f(x_cur) - f(x_prev)) < precision:
             return x_cur, f(x_cur)
 
         iteration += 1
@@ -45,13 +45,13 @@ def gradient_descent(f, x0, precision):
 
 expression = input("Введіть функцію (наприклад: x1**2 + 8*x2 - x1*x3):\n>>> ")
 
-x0 = list(map(float, input("Введіть початкове наближення (координати через пробіл):\n>>> ").split()))
+x0 = list(map(float, input("Введіть початкове наближення (через пробіл):\n>>> ").strip().split()))
 
-epsilon = float(input("Введіть точність (наприклад 0.05):\n>>> "))
+epsilon = float(input("Введіть точність (наприклад 0.05):\n>>> ").strip())
 
 f = build_function_from_input(expression, len(x0))
 
 x_min, f_min = gradient_descent(f, x0, epsilon)
 
 print(f"\nМінімум f(x) = {f_min:.10f} досягнуто при:")
-print(f"x = [{x_min}]")
+print(f"x = {x_min}")
