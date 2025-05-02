@@ -27,7 +27,7 @@ def conditional_descent(f, x0, A, b, precision):
     
     iteration = 0
     while True:
-        lin_gradient = computed_grad(x_prev) * x_cur
+        lin_gradient = computed_grad(x_prev)
 
         # There should be simplex method
         y_cur = linprog(lin_gradient, A_ub=A, b_ub=b, method='highs')
@@ -42,8 +42,8 @@ def conditional_descent(f, x0, A, b, precision):
         x_prev = x_cur
         x_cur = x_cur + step * direction
 
-        x_string = "[" + ", ".join(f"{xi:.10f}" for xi in x_cur) + "]"
-        print(f"Iteration = {iteration}, x = {x_string}, f(x) = {f(x_cur):.9f}")
+        x_string = "[" + ", ".join(f"{xi:.8f}" for xi in x_cur) + "]"
+        print(f"Iteration = {iteration}, x = {x_string}, f(x) = {f(x_cur):.8f}")
 
 
         if abs(f(x_cur) - f(x_prev)) < precision:
@@ -77,6 +77,6 @@ epsilon = float(input("Введіть точність (наприклад 0.05)
 f = build_function_from_input(expression, n)
 x_min, f_min = conditional_descent(f, x0, A, b, epsilon)
 
-x_string = "[" + ", ".join(f"{xi:.10f}" for xi in x_min) + "]"
-print(f"\nМінімум f(x) = {f_min:.10f} досягнуто при:")
+x_string = "[" + ", ".join(f"{xi:.8f}" for xi in x_min) + "]"
+print(f"\nМінімум f(x) = {f_min:.8f} досягнуто при:")
 print(f"x = {x_string}")
